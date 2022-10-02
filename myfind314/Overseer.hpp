@@ -6,10 +6,10 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/wait.h>
 #include <filesystem>
 #include <vector>
 #include <string>
-
 #include <fstream>
 
 namespace fs = std::filesystem;
@@ -28,8 +28,11 @@ private:
     void initiateSearch(string* path, vector<string>* input);
     void checkForFile(const string* path, const string *fileName);
     bool checkFile(const string *fileName);
+    void checkFileRec(const string *path, const string *fileName);
+    string createFullPath(string path, string* fileName);
 
     void createChildren(string* path, vector<string>* input);
+
 
 public:
     Overseer(int argc, char *argv[]);

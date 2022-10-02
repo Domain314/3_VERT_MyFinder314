@@ -20,19 +20,20 @@ class Overseer {
 
 private:
     bool rec_flag = false;
-    bool case_insensitive_flag = false;
-//    void checkForFile(const fs::path& p, fs::file_status s = fs::file_status{});
+//    bool case_insensitive_flag = false;
 
     void setFlags(int argc, char **argv);
     void extractSearchables(int argc, char **argv);
-    void initiateSearch(string* path, vector<string>* input);
-    void checkForFile(const string* path, const string *fileName);
-    bool checkFile(const string *fileName);
-    void checkFileRec(const string *path, const string *fileName);
-    string createFullPath(string path, string* fileName);
 
     void createChildren(string* path, vector<string>* input);
 
+    void initiateSearch(string* path, vector<string>* input);
+    void defineSearchDepth(const string* path, const string *fileName);
+
+    bool checkFile(const string *fileName);
+    void recCheckFile(const string *path, const string *fileName);
+
+    string createFullPath(string path, string* fileName);
 
 public:
     Overseer(int argc, char *argv[]);

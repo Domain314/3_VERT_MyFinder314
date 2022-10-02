@@ -8,17 +8,15 @@ Overseer::Overseer(int argc, char **argv) {
 void Overseer::setFlags(int argc, char **argv) {
     int c;
     while((c = getopt(argc, argv, "Rih")) != EOF) {
-
-        switch(c)
-        {
+        switch(c) {
             case 'R':
                 rec_flag = true;
                 printf("switch 'R' specified\n");
                 break;
 
             case 'i':
-                case_insensitive_flag = true;
-                printf("switch 'i' specified");
+//                case_insensitive_flag = true;
+                printf("switch 'i' specified\n");
                 break;
 
             case '?':
@@ -39,43 +37,13 @@ void Overseer::extractSearchables(int argc, char **argv) {
     for (int i = 1; i < argc; ++i) {
         if (argv[i][0] != '-') input->insert(input->end(), string(argv[i]));
     }
-    initiateSearch(&input->at(0), input);
+    if (input->size() < 2) printf("wrong input!\n");
+    else initiateSearch(&input->at(0), input);
 }
 
 void Overseer::initiateSearch(string* path, vector<string>* input) {
     if (input->size() > 2) createChildren(path, input);
-}
-
-void Overseer::checkForFile(const string *path, const string *fileName) {
-    if (rec_flag) {
-        checkFileRec(path, fileName);
-    } else {
-
-    }
-    string fullPath = *path + *fileName;
-    //    printf("Full path: %s\n", fullPath.c_str());
-    if (checkFile(&fullPath)) {
-        printf("pid: %ld - file %s - path %s\n", (long int)getpid(), fileName->c_str(), fs::current_path().c_str());
-    }
-}
-
-bool Overseer::checkFile(const string *fileName) {
-//    printf("%s\n",fileName->c_str());
-    struct stat buffer;
-    return (stat (fileName->c_str(), &buffer) == 0);
-}
-
-void Overseer::checkFileRec(const string *path, const string *fileName) {
-    for (const auto & entry : fs::recursive_directory_iterator(*path)) {
-        string fullPath = createFullPath(entry.path().string(), const_cast<string *>(fileName));
-        if (checkFile(&fullPath)) {
-            printf("pid: %ld - file %s - path %s\n", (long int)getpid(), fileName->c_str(), fullPath.c_str());
-        }
-    }
-}
-
-string Overseer::createFullPath(string path, string* fileName) {
-    return path + '/' + *fileName;
+    else defineSearchDepth(path, &input->at(1));
 }
 
 void Overseer::createChildren(string *path, vector<string> *input) {
@@ -83,14 +51,12 @@ void Overseer::createChildren(string *path, vector<string> *input) {
     int status;
     bool isParent = true;
     for (size_t i = 1; i < input->size(); ++i) {
-
         pids[i-1] = fork();
-
         if (pids[i-1] < 0) {
             printf("Error forking\n");
         } else if (pids[i-1] == 0) {
             isParent = false;
-            checkForFile(path, &input->at(i));
+            defineSearchDepth(path, &input->at(i));
             break;
         }
     }
@@ -98,7 +64,32 @@ void Overseer::createChildren(string *path, vector<string> *input) {
         for (size_t i = 0; i < input->size()-1; ++i) {
             waitpid(pids[i], &status, 0);
         }
-    } else {
-//        printf("child process\n");
     }
+}
+
+void Overseer::defineSearchDepth(const string *path, const string *fileName) {
+    if (rec_flag) recCheckFile(path, fileName);
+
+    string fullPath = *path + *fileName;
+    if (checkFile(&fullPath)) {
+        printf("%ld: %s: %s\n", (long int)getpid(), fileName->c_str(), fullPath.c_str());
+    }
+}
+
+bool Overseer::checkFile(const string *fileName) {
+    struct stat buffer{};
+    return (stat (fileName->c_str(), &buffer) == 0);
+}
+
+void Overseer::recCheckFile(const string *path, const string *fileName) {
+    for (const auto & entry : fs::recursive_directory_iterator(*path)) {
+        string fullPath = createFullPath(entry.path().string(), const_cast<string *>(fileName));
+        if (checkFile(&fullPath)) {
+            printf("%ld: %s: %s\n", (long int)getpid(), fileName->c_str(), fullPath.c_str());
+        }
+    }
+}
+
+string Overseer::createFullPath(string path, string* fileName) {
+    return path + '/' + *fileName;
 }

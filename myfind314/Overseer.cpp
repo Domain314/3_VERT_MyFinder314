@@ -12,12 +12,12 @@ void Overseer::setFlags(int argc, char **argv) {
         switch(c)
         {
             case 'R':
-                rec_flag = 1;
+                rec_flag = true;
                 printf("switch 'R' specified\n");
                 break;
 
             case 'i':
-                case_sensitive_flag = 0;
+                case_insensitive_flag = true;
                 printf("switch 'i' specified");
                 break;
 
@@ -45,17 +45,17 @@ void Overseer::extractSearchables(int argc, char **argv) {
 void Overseer::initiateSearch(string* path, vector<string>* input) {
     if (input->size() > 2) createChildren(path, input);
 
-    for (u_long i = 1; i < input->size(); ++i) {
-        printf("entry: %s\n", input->at(i).c_str());
-        checkForFile(path, &input->at(i));
-
-    }
+//    for (u_long i = 1; i < input->size(); ++i) {
+////        printf("entry: %s\n", input->at(i).c_str());
+//        checkForFile(path, &input->at(i));
+//
+//    }
 //    fs::path searchPath = fs::path(path + "/tester");
 }
 
 void Overseer::checkForFile(const string *path, const string *fileName) {
     string fullPath = *path + *fileName;
-    printf("Full path: %s\n", fullPath.c_str());
+//    printf("Full path: %s\n", fullPath.c_str());
     if (checkFile(&fullPath)) {
         printf("pid: %ld - file %s - path %s\n", (long int)getpid(), fileName->c_str(), fs::current_path().c_str());
     }
@@ -75,8 +75,46 @@ bool Overseer::checkFile(const string *fileName) {
 }
 
 void Overseer::createChildren(string *path, vector<string> *input) {
-    pid_t pid = 0;
-    
+//    int argcount = 3 + rec_flag + case_insensitive_flag;
+//    printf("%d\n", argcount);
+
+//    char[]* args = &["./mf "];
+
+    pid_t pids[(int)input->size()-1];
+    bool isParent = true;
+    for (size_t i = 1; i < input->size(); ++i) {
+//        char *args[argcount];
+//        int counter = 2;
+//        args[0] = (char*)"./mf";
+//        args[1] = (char*)path->c_str();
+//
+//        if (rec_flag) { args[counter] = (char*)"-R"; counter++; }
+//        if (case_insensitive_flag) { args[counter] = (char*)"-i"; counter++; }
+//        args[counter] = (char *) input->at(i).c_str();
+//        for (int j = 0; j < counter+1; ++j) {
+//            printf("%s\n", args[j]);
+//        }
+
+        pids[i-1] = fork();
+
+        if (pids[i-1] < 0) {
+            printf("Error forking\n");
+        } else if (pids[i-1] == 0) {
+            isParent = false;
+            checkForFile(path, &input->at(i));
+//            input->at(i);
+            break;
+        }
+    }
+    if (isParent) {
+        printf("parent process\n");
+    } else {
+        printf("child process\n");
+    }
+
+//    pid_t pid = 0;
+//    pid = fork();
+
 }
 
 

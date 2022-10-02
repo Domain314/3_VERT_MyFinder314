@@ -20,7 +20,7 @@ class Overseer {
 
 private:
     bool rec_flag = false;
-    bool case_sensitive_flag = true;
+    bool case_insensitive_flag = false;
 //    void checkForFile(const fs::path& p, fs::file_status s = fs::file_status{});
 
     void setFlags(int argc, char **argv);

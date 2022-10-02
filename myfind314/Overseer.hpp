@@ -1,16 +1,11 @@
 #ifndef MYFIND314_OVERSEER_HPP
 #define MYFIND314_OVERSEER_HPP
 
-#include <cstdio>
-#include <cstdlib>
-#include <unistd.h>
-#include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
 #include <filesystem>
 #include <vector>
 #include <string>
-#include <fstream>
 
 namespace fs = std::filesystem;
 
@@ -37,9 +32,6 @@ private:
 
 public:
     Overseer(int argc, char *argv[]);
-
-
-
 
 };
 

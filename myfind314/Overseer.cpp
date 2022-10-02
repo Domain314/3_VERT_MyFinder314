@@ -82,12 +82,14 @@ bool Overseer::checkFile(const string *fileName) {
 }
 
 void Overseer::recCheckFile(const string *path, const string *fileName) {
-    for (const auto & entry : fs::recursive_directory_iterator(*path)) {
-        string fullPath = createFullPath(entry.path().string(), const_cast<string *>(fileName));
-        if (checkFile(&fullPath)) {
-            printf("%ld: %s: %s\n", (long int)getpid(), fileName->c_str(), fullPath.c_str());
+    try {
+        for (const auto & entry : fs::recursive_directory_iterator(*path)) {
+            string fullPath = createFullPath(entry.path().string(), const_cast<string *>(fileName));
+            if (checkFile(&fullPath)) {
+                printf("%ld: %s: %s\n", (long int)getpid(), fileName->c_str(), fullPath.c_str());
+            }
         }
-    }
+    } catch (...) { }
 }
 
 string Overseer::createFullPath(string path, string* fileName) {

@@ -23,12 +23,13 @@ private:
     void createChildren(string* path, vector<string>* input);
 
     void initiateSearch(string* path, vector<string>* input);
-    void defineSearchDepth(const string* path, const string *fileName);
+    void defineSearchDepth(const string* path, const string *fileName) const;
 
-    bool checkFile(const string *fileName);
-    void recCheckFile(const string *path, const string *fileName);
+    static bool checkFile(const string *fileName);
+    static void recCheckFile(const string *path, const string *fileName);
 
-    string createFullPath(string path, string* fileName);
+    static string createSearchPath(string path, string* fileName);
+    static string createFullPath(string path, string* fullPath, string* fileName);
 
 public:
     Overseer(int argc, char *argv[]);

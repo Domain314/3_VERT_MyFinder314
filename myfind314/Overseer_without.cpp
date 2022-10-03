@@ -46,13 +46,14 @@ void Overseer::extractSearchables(int argc, char **argv) {
     else initiateSearch(&input->at(0), input);
 }
 
-// If more than 1 filename, begin creating children. if not, begin to the search.
+// If more than 1 filename, begin creating children. If not, begin the search alone.
 void Overseer::initiateSearch(string* path, vector<string>* input) {
     if (input->size() > 2) createChildren(path, input);
     else defineSearchDepth(path, &input->at(1));
 }
 
-// fork for each filename one child process and wait until all children are done searching.
+// Fork for each filename one child process and wait until all children are done searching.
+// Every child will set isParent to false, while only the parent's isParent will remain true.
 void Overseer::createChildren(string *path, vector<string> *input) {
     pid_t pids[(int)input->size()-1];
     int status;
@@ -67,6 +68,7 @@ void Overseer::createChildren(string *path, vector<string> *input) {
             break;
         }
     }
+//    wait for Children to finish their job to prevent a 'zombie apocalypse'
     if (isParent) {
         for (size_t i = 0; i < input->size()-1; ++i) {
             waitpid(pids[i], &status, 0);
@@ -81,7 +83,7 @@ void Overseer::defineSearchDepth(const string *path, const string *fileName) con
 
     string fullPath = *path + *fileName;
     if (checkFile(&fullPath)) {
-        printf("%ld: %s: %s\n", (long int)getpid(), fileName->c_str(), fullPath.c_str());
+        printf("%ld: %s: %s\n", (long int)getpid(), fileName->c_str(), createFullPath(fs::current_path(), &fullPath, const_cast<string *>(fileName)).c_str());
     }
 }
 
@@ -96,15 +98,21 @@ bool Overseer::checkFile(const string *fileName) {
 void Overseer::recCheckFile(const string *path, const string *fileName) {
     try {
         for (const auto & entry : fs::recursive_directory_iterator(*path)) {
-            string fullPath = createFullPath(entry.path().string(), const_cast<string *>(fileName));
+            string fullPath = createSearchPath(entry.path().string(), const_cast<string *>(fileName));
             if (checkFile(&fullPath)) {
-                printf("%ld: %s: %s\n", (long int)getpid(), fileName->c_str(), fullPath.c_str());
+                printf("%ld: %s: %s\n", (long int)getpid(), fileName->c_str(), createFullPath(fs::current_path(), &fullPath, const_cast<string *>(fileName)).c_str());
             }
         }
     } catch (...) { }
 }
 
-// helper function to create the full searchpath
-string Overseer::createFullPath(string path, string* fileName) {
+// helper function to create a searchpath
+string Overseer::createSearchPath(string path, string* fileName) {
     return path + '/' + *fileName;
+}
+
+// helper function to create a path to output
+string Overseer::createFullPath(string path, string* fullPath, string* fileName) {
+    if (fullPath->at(0) == '.') return path + fullPath->substr(1);
+    else return *fullPath;
 }

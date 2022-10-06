@@ -115,6 +115,6 @@ string Overseer::createSearchPath(string path, string* fileName) {
 
 // helper function to create a path to output
 string Overseer::createFullPath(string path, string* fullPath, string* fileName) {
-    if (fullPath->at(0) == '.') return path + fullPath->substr(1);
+    if (fullPath->at(0) == '.') return path + (fullPath->at(1) == '.' ? fullPath->substr(2) : fullPath->substr(1));
     else return *fullPath;
 }
